@@ -6,10 +6,11 @@ const client = new S3Client()
 let statuses: Record<string, FileStatus | undefined> = {}
 
 async function list(prefix?: string): Promise<Files> {
-  const list = await client.list({ prefix })
+  const list = await client.list({ prefix, delimiter: '/' })
   return {
     count: list.keyCount ?? 0,
     files: (list.contents ?? []).map(f => ({ name: f.key, lastModified: f.lastModified, size: f.size }) as FileInfo),
+    directories: list.commonPrefixes?.map(a => a.prefix) ?? [],
   }
 }
 
@@ -19,6 +20,7 @@ const statusState = new LazyState(() => statuses)
 interface Files {
   count: number
   files: FileInfo[]
+  directories: string[]
 }
 interface FileInfo {
   name: string
