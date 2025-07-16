@@ -37,6 +37,10 @@ const readWrite: Bun.S3FilePresignOptions = { acl: 'public-read-write', method: 
 
 new Service()
   .post('s3/read', (path: string) => client.presign(path, read))
+  .post('s3/read/directory', async (path: string) => {
+    const files = await client.list({ prefix: path })
+    return files.contents?.map(a => a.key) ?? []
+  })
   .post('s3/write', (path: string) => client.presign(path, readWrite))
   .post('s3/delete', async (path: string) => {
     if (path.endsWith('/')) {
