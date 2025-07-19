@@ -1,20 +1,27 @@
 import { Service } from 'hub-service'
 import { S3Client } from 'bun'
-import { LazyState } from 'channel/more'
+import { LazyStates, LazyState, LazyStateIterator } from 'channel/more'
 
 const client = new S3Client()
 let statuses: Record<string, FileStatus | undefined> = {}
 
 async function list(prefix?: string): Promise<Files> {
   const list = await client.list({ prefix, delimiter: '/' })
+  const slice = prefix?.length ?? 0
   return {
     count: list.keyCount ?? 0,
-    files: (list.contents ?? []).map(f => ({ name: f.key, lastModified: f.lastModified, size: f.size }) as FileInfo),
-    directories: list.commonPrefixes?.map(a => a.prefix) ?? [],
+    files: (list.contents ?? []).map(
+      f => ({ name: f.key.slice(slice), lastModified: f.lastModified, size: f.size }) as FileInfo,
+    ),
+    directories: list.commonPrefixes?.map(a => a.prefix.slice(slice)) ?? [],
   }
 }
-
-const filesState = new LazyState<Files>(() => list())
+function getParent(path: string) {
+  const split = path.split('/')
+  const directory = split.slice(0, split.at(-1) === '' ? -2 : -1).join('/')
+  return directory.length === 0 ? directory : directory + '/'
+}
+const filesState = new LazyStates((path: string) => list(path))
 const statusState = new LazyState(() => statuses)
 
 interface Files {
@@ -49,25 +56,25 @@ new Service()
         for (const file of files.contents) {
           console.log('Deleting', file.key)
           await client.delete(file.key)
-          filesState.setNeedsUpdate()
+          filesState.setNeedsUpdate(getParent(file.key))
         }
       }
     } else {
       await client.delete(path)
-      filesState.setNeedsUpdate()
+      filesState.setNeedsUpdate(getParent(path))
     }
   })
   .post('s3/size', (path: string) => client.size(path))
   .post('s3/list', async (prefix?: string) => list(prefix))
-  .post('s3/updated', async () => filesState.setNeedsUpdate())
+  .post('s3/updated', async (path?: string) => filesState.setNeedsUpdate(path ?? ''))
   .post('s3/update/status', async ({ path, status }) => {
     if (status) {
       statuses[path] = status
     } else {
       delete statuses[path]
     }
-    filesState.setNeedsUpdate()
+    statusState.setNeedsUpdate()
   })
-  .stream('s3/list', () => filesState.makeIterator())
+  .stream('s3/list', (body?: string) => filesState.makeIterator(body ?? ''))
   .stream('s3/status', () => statusState.makeIterator())
   .start()
