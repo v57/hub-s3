@@ -17,6 +17,7 @@ async function list(prefix?: string): Promise<Files> {
   }
 }
 function getParent(path: string) {
+  if (path.length === 0) return path
   const split = path.split('/')
   const directory = split.slice(0, split.at(-1) === '' ? -2 : -1).join('/')
   return directory.length === 0 ? directory : directory + '/'
@@ -58,6 +59,7 @@ new Service()
           await client.delete(file.key)
           filesState.setNeedsUpdate(getParent(file.key))
         }
+        filesState.setNeedsUpdate(getParent(path))
       }
     } else {
       await client.delete(path)
