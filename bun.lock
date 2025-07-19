@@ -4,13 +4,14 @@
     "": {
       "name": "hub-s3",
       "dependencies": {
+        "channel": "v57/channel",
         "hub-service": "v57/hub-service",
       },
       "devDependencies": {
         "@types/bun": "latest",
       },
       "peerDependencies": {
-        "typescript": "^5",
+        "typescript": "^5.8.3",
       },
     },
   },
@@ -23,7 +24,7 @@
 
     "bun-types": ["bun-types@1.2.18", "", { "dependencies": { "@types/node": "*" }, "peerDependencies": { "@types/react": "^19" } }, "sha512-04+Eha5NP7Z0A9YgDAzMk5PHR16ZuLVa83b26kH5+cp1qZW4F6FmAURngE7INf4tKOvCE69vYvDEwoNl1tGiWw=="],
 
-    "channel": ["channel@github:v57/channel#d7e6222", { "peerDependencies": { "typescript": "^5.0.0" } }, "v57-channel-d7e6222"],
+    "channel": ["channel@github:v57/channel#42b74c9", { "peerDependencies": { "typescript": "^5.0.0" } }, "v57-channel-42b74c9"],
 
     "csstype": ["csstype@3.1.3", "", {}, "sha512-M1uQkMl8rQK/szD0LNhtqxIPLpimGm8sOBwU7lLnCpSbTyY3yeU1Vc7l4KT5zT4s/yOxHH5O7tIuuLOCnLADRw=="],
 
