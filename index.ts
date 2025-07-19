@@ -54,11 +54,11 @@ new Service()
     if (path.endsWith('/')) {
       const files = await client.list({ prefix: path })
       if (files.contents) {
-        for (const file of files.contents) {
-          console.log('Deleting', file.key)
-          await client.delete(file.key)
-          filesState.setNeedsUpdate(getParent(file.key))
-        }
+        await Promise.all(
+          files.contents.map(file =>
+            client.delete(file.key).then(() => filesState.setNeedsUpdate(getParent(file.key))),
+          ),
+        )
         filesState.setNeedsUpdate(getParent(path))
       }
     } else {
