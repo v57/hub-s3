@@ -43,7 +43,7 @@ interface FileStatus {
 const read: Bun.S3FilePresignOptions = { acl: 'public-read', method: 'GET', expiresIn: 86400 * 7 }
 const readWrite: Bun.S3FilePresignOptions = { acl: 'public-read-write', method: 'PUT', expiresIn: 86400 * 7 }
 
-new Service()
+new Service({ name: 'S3 Storage', icon: { symbol: 'folder', text: 'S3' } })
   .post('s3/read', (path: string) => client.presign(path, read))
   .post('s3/read/directory', async (path: string) => {
     const list = await client.list({ prefix: path })
