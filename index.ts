@@ -1,6 +1,6 @@
 import { Service } from 'hub-service'
 import { S3Client } from 'bun'
-import { LazyStates, LazyState, LazyStateIterator } from 'channel/more'
+import { LazyStates, LazyState } from 'channel/more'
 
 const client = new S3Client()
 let statuses: Record<string, FileStatus | undefined> = {}
@@ -22,8 +22,8 @@ function getParent(path: string) {
   const directory = split.slice(0, split.at(-1) === '' ? -2 : -1).join('/')
   return directory.length === 0 ? directory : directory + '/'
 }
-const filesState = new LazyStates((path: string) => list(path))
-const statusState = new LazyState(() => statuses)
+const filesState = new LazyStates((path: string) => list(path)).dedupe('equals')
+const statusState = new LazyState(() => statuses).dedupe('json')
 
 interface Files {
   count: number
@@ -80,3 +80,5 @@ new Service({ name: 'S3 Storage', icon: { symbol: 'folder', text: 'S3' } })
   .stream('s3/list', (body?: string) => filesState.makeIterator(body ?? ''))
   .stream('s3/status', () => statusState.makeIterator())
   .start()
+
+console.log(await list())
