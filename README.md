@@ -7,6 +7,10 @@
 
 Share S3 server with your Hub network
 
+AWS, Wasabi, and other remote S3 endpoints remain public by default. Hub
+Network publication requires explicit opt-in and a loopback HTTP(S) endpoint;
+remote endpoints are never implicitly tunneled.
+
 ## Download file
 
 ```ts
