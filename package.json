@@ -15,7 +15,7 @@
     "typescript": "^5.8.3"
   },
   "dependencies": {
-    "channel": "file:../channel",
-    "hub-service": "file:../hub-service"
+    "channel": "v57/channel",
+    "hub-service": "v57/hub-service"
   }
 }
